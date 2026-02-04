@@ -56,6 +56,13 @@ export const reviewService = {
   delete: (id) => api.delete(`/reviews/${id}/`).then(res => res.data),
 };
 
+export const customerService = {
+  getAll: () => api.get('/customers/').then(res => res.data),
+  create: (data) => api.post('/customers/', data).then(res => res.data),
+  update: (id, data) => api.put(`/customers/${id}/`, data).then(res => res.data),
+  delete: (id) => api.delete(`/customers/${id}/`).then(res => res.data),
+};
+
 export default api;
 
 

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Star, MessageSquare, Trash2, Send } from 'lucide-react';
-import { reviewService } from '../services/api';
+import { Star, MessageSquare, Trash2, Send, Loader2 } from 'lucide-react';
+import { reviewService, customerService } from '../services/api';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import Modal from './ui/Modal';
-import { Loader2 } from 'lucide-react';
 
 const StarRating = ({ rating, setRating, editable = false }) => {
     return (
@@ -30,6 +29,8 @@ const StarRating = ({ rating, setRating, editable = false }) => {
 
 export const ProductReviewsModal = ({ isOpen, onClose, product }) => {
     const [reviews, setReviews] = useState([]);
+    const [customers, setCustomers] = useState([]);
+    const [selectedCustomer, setSelectedCustomer] = useState('');
     const [loading, setLoading] = useState(true);
     const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -37,8 +38,19 @@ export const ProductReviewsModal = ({ isOpen, onClose, product }) => {
     useEffect(() => {
         if (isOpen && product) {
             fetchReviews();
+            fetchCustomers();
         }
     }, [isOpen, product]);
+
+    const fetchCustomers = async () => {
+        try {
+            const data = await customerService.getAll();
+            setCustomers(data);
+            if (data.length > 0) setSelectedCustomer(data[0].id);
+        } catch (error) {
+            console.error('Failed to fetch customers', error);
+        }
+    };
 
     const fetchReviews = async () => {
         setLoading(true);
@@ -56,9 +68,14 @@ export const ProductReviewsModal = ({ isOpen, onClose, product }) => {
         e.preventDefault();
         setSubmitting(true);
         try {
+            if (!selectedCustomer) {
+                alert('Please select a customer');
+                setSubmitting(false);
+                return;
+            }
             await reviewService.create({
                 product_id: product.id,
-                user_id: 1, // Hardcoded for demo
+                customer_id: selectedCustomer,
                 rating: newReview.rating,
                 comment: newReview.comment
             });
@@ -86,18 +103,33 @@ export const ProductReviewsModal = ({ isOpen, onClose, product }) => {
                 {/* Review Form */}
                 <form onSubmit={handleSubmit} className="bg-slate-800/50 p-4 rounded-lg border border-slate-700 space-y-4">
                     <h4 className="font-medium text-white mb-2">Write a Review</h4>
-                    <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                            <Input
-                                placeholder="Share your thoughts..."
-                                value={newReview.comment}
-                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                    <div className="space-y-3">
+                        <div>
+                            <select
+                                value={selectedCustomer}
+                                onChange={(e) => setSelectedCustomer(e.target.value)}
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary"
                                 required
-                            />
+                            >
+                                <option value="">Select Customer</option>
+                                {customers.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name} ({c.email})</option>
+                                ))}
+                            </select>
                         </div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-xs text-slate-400 mb-1">Rating</span>
-                            <StarRating rating={newReview.rating} setRating={(r) => setNewReview({ ...newReview, rating: r })} editable />
+                        <div className="flex items-center gap-4">
+                            <div className="flex-1">
+                                <Input
+                                    placeholder="Share your thoughts..."
+                                    value={newReview.comment}
+                                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <span className="text-xs text-slate-400 mb-1">Rating</span>
+                                <StarRating rating={newReview.rating} setRating={(r) => setNewReview({ ...newReview, rating: r })} editable />
+                            </div>
                         </div>
                     </div>
                     <div className="flex justify-end">
@@ -116,7 +148,7 @@ export const ProductReviewsModal = ({ isOpen, onClose, product }) => {
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <StarRating rating={review.rating} />
-                                            <span className="text-xs text-slate-500 ml-2">{review.username || `User #${review.user_id}`}</span>
+                                            <span className="text-xs text-slate-500 ml-2">{review.customer_name || review.username || `User #${review.user_id}`}</span>
                                         </div>
                                         <p className="text-sm text-slate-300 whitespace-pre-line">{review.comment}</p>
                                     </div>

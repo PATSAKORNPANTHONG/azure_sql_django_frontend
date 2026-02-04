@@ -32,6 +32,12 @@ const Layout = ({ children }) => {
         { label: 'Stores', to: '/stores', icon: Store },
         { label: 'Products', to: '/products', icon: ShoppingBag },
         { label: 'Orders', to: '/orders', icon: ShoppingCart },
+        { label: 'Customers', to: '/customers', icon: Users },
+        // { label: 'Users', to: '/users', icon: Users }, // Commenting out Users as requested or implied replacement? No, let's keep both but maybe differentiate icons?
+        // Actually the icon for Users is Users. Let's use UserCircle for Customers or something else if needed.
+        // Wait, I should import a different icon if I want to distinguish.
+        // Let's check imports. Users is imported as Users. 
+        // I'll stick to Users icon for now but maybe change the label position?
         { label: 'Users', to: '/users', icon: Users },
     ];
 
