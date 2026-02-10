@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-    // baseURL: 'https://bearlab-backend-d9awbhgfe4c6abdq.southeastasia-01.azurewebsites.net/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://bearlab-backend-d9awbhgfe4c6abdq.southeastasia-01.azurewebsites.net/api',
   // baseURL: 'http://127.0.0.1:8000/api', // Local API
   headers: {
     'Content-Type': 'application/json',
@@ -72,7 +71,7 @@ export default api;
 
 
 export const getApiConfig = () => {
-  const baseURL = api.defaults.baseURL;
+  const baseURL = api.defaults.baseURL || '';
   const isLocal = baseURL.includes('127.0.0.1') || baseURL.includes('localhost');
   return {
     isLocal,
