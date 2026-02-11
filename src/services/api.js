@@ -8,6 +8,10 @@ const api = axios.create({
   },
 });
 
+console.log('🔧 API Configuration:');
+console.log('  Main API URL:', api.defaults.baseURL);
+console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL);
+
 // Add a response interceptor to handle errors globally if needed
 api.interceptors.response.use(
   (response) => response,
@@ -56,11 +60,34 @@ export const reviewService = {
   delete: (id) => api.delete(`/reviews/${id}/`).then(res => res.data),
 };
 
+// Function App URL - Replace with your actual Azure Function App URL
+const FUNCTION_API_URL = 'https://bearlab-function-app-baebfye2fnb7bmcj.southeastasia-01.azurewebsites.net/api';
+
+const functionApi = axios.create({
+  baseURL: FUNCTION_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+console.log('🔧 Function API Configuration:');
+console.log('  Function API URL:', functionApi.defaults.baseURL);
+
+export const contentFilterService = {
+  filterComment: (comment) => {
+    if (functionApi.defaults.baseURL.includes('<YOUR_FUNCTION_APP_NAME>')) {
+      console.error('❌ Please replace <YOUR_FUNCTION_APP_NAME> with your actual Function App name in api.js');
+      return Promise.reject(new Error('Function API URL not configured'));
+    }
+    return functionApi.post('/filter_comment', { comment }).then(res => res.data);
+  },
+};
+
 export default api;
 
 
 export const getApiConfig = () => {
-  const baseURL = api.defaults.baseURL;
+  const baseURL = api.defaults.baseURL || '';
   const isLocal = baseURL.includes('127.0.0.1') || baseURL.includes('localhost');
   return {
     isLocal,
